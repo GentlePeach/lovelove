@@ -2,33 +2,33 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>I Love You</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>For My Love</title>
     <style>
-        body {
-            margin: 0;
-            overflow: hidden;
-            background: #0a0a0a;
-            font-family: Arial, sans-serif;
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            background: #050505; 
+            overflow: hidden; 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            height: 100vh;
+            width: 100vw;
         }
 
         #container {
             position: relative;
-            width: 100vw;
-            height: 100vh;
+            width: 100%;
+            height: 100%;
         }
 
         .heart {
             position: absolute;
-            left: 0;
-            top: 0;
             color: #ff2d55;
-            font-size: 14px;
+            font-size: 12px;
             user-select: none;
             pointer-events: none;
-            /* Dùng transition cho transform sẽ cực kỳ mượt */
-            transition: transform 2.5s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 1.5s;
-            will-change: transform; /* Báo trước cho trình duyệt tối ưu GPU */
+            will-change: transform;
+            transition: transform 2s cubic-bezier(0.19, 1, 0.22, 1), opacity 1s;
+            z-index: 1;
         }
 
         #startBtn {
@@ -36,119 +36,137 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            padding: 15px 40px;
-            font-size: 18px;
-            background: #ff2d55;
+            padding: 16px 32px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            background: linear-gradient(45deg, #ff2d55, #ff5e7e);
             color: white;
             border: none;
-            border-radius: 50px;
+            border-radius: 100px;
             cursor: pointer;
             z-index: 100;
-            box-shadow: 0 0 20px rgba(255, 45, 85, 0.6);
+            box-shadow: 0 10px 20px rgba(255, 45, 85, 0.4);
+            white-space: nowrap;
         }
 
-        /* Hiệu ứng hào quang cho chữ */
+        /* Chữ sáng rực lên khi gom lại */
         .glow {
-            text-shadow: 0 0 10px #ff2d55, 0 0 20px #ff2d55;
-            font-size: 18px !important;
+            text-shadow: 0 0 8px #ff2d55, 0 0 15px #ff2d55;
+            font-size: 15px !important;
+            opacity: 1 !important;
         }
     </style>
 </head>
 <body>
 
-    <button id="startBtn">Bấm vào đây đi!</button>
+    <button id="startBtn">Nhấn vào đây đi! ❤️</button>
+    
+    <audio id="bgMusic" loop>
+        <source src="https://www.chosic.com/wp-content/uploads/2021/09/Perfect-Beauty.mp3" type="audio/mpeg">
+    </audio>
+
     <div id="container"></div>
 
     <script>
         const container = document.getElementById('container');
         const startBtn = document.getElementById('startBtn');
-        const count = 700; // Tăng số lượng hạt lên để chữ dày hơn
+        const music = document.getElementById('bgMusic');
         const hearts = [];
+        const heartCount = 1000; // Tăng lên 1000 hạt cho cực dày
 
-        // Bảng mã chữ I LOVE YOU (Dày hơn)
-        // Dùng hệ tọa độ (x, y) để vẽ
-        const points = [];
+        // Pattern chữ I LOVE YOU rút gọn để vừa màn hình dọc
         const pattern = [
-            "  I      L      OOO    V   V  EEEEE     Y   Y   OOO   U   U",
-            "  I      L     O   O   V   V  E          Y Y   O   O  U   U",
-            "  I      L     O   O   V   V  EEEE        Y    O   O  U   U",
-            "  I      L     O   O    V V   E           Y    O   O  U   U",
-            "  I      LLLLL  OOO      V    EEEEE       Y     OOO    UUU "
+            "I   L   OOO  V   V  EEEE",
+            "I   L  O   O V   V  E   ",
+            "I   L  O   O  V V   EEEE",
+            "I   L  O   O   V    E   ",
+            "I   LLLL OOO   V    EEEE",
+            "                        ", // Khoảng trống
+            "   Y   Y   OOO   U   U  ",
+            "    Y Y   O   O  U   U  ",
+            "     Y    O   O  U   U  ",
+            "     Y    O   O  U   U  ",
+            "     Y     OOO    UUU   "
         ];
 
-        // Tạo hạt tim ban đầu (bay hỗn loạn như gió)
         function init() {
-            for (let i = 0; i < count; i++) {
+            for (let i = 0; i < heartCount; i++) {
                 const heart = document.createElement('div');
                 heart.className = 'heart';
                 heart.innerHTML = '❤';
                 
-                // Vị trí ngẫu nhiên ngoài màn hình
-                const startX = Math.random() * window.innerWidth;
-                const startY = Math.random() * window.innerHeight;
+                // Vị trí xuất phát ngẫu nhiên
+                const x = Math.random() * window.innerWidth;
+                const y = Math.random() * window.innerHeight;
                 
-                heart.style.transform = `translate(${startX}px, ${startY}px) scale(0)`;
+                heart.style.transform = `translate(${x}px, ${y}px) scale(0)`;
                 heart.style.opacity = '0';
                 
                 container.appendChild(heart);
-                hearts.push({
-                    el: heart,
-                    x: startX,
-                    y: startY
-                });
+                hearts.push({ el: heart });
             }
         }
 
-        function createLetterPoints() {
-            const spacing = 15; // Khoảng cách giữa các hạt (nhỏ hơn = dày hơn)
-            const offsetX = window.innerWidth / 2 - (pattern[0].length * spacing) / 2;
-            const offsetY = window.innerHeight / 2 - (pattern.length * spacing) / 2;
+        function getTargetPoints() {
+            const points = [];
+            const isMobile = window.innerWidth < 600;
+            
+            // Tính toán khoảng cách hạt dựa trên chiều rộng màn hình
+            const spacing = isMobile ? (window.innerWidth / 26) : 22; 
+            const offsetX = (window.innerWidth - pattern[0].length * spacing) / 2;
+            const offsetY = (window.innerHeight - pattern.length * spacing) / 2;
 
             for (let y = 0; y < pattern.length; y++) {
                 for (let x = 0; x < pattern[y].length; x++) {
                     if (pattern[y][x] !== " ") {
-                        // Với mỗi điểm trong pattern, tạo 2 hạt đè lên nhau để chữ dày hơn
-                        points.push({ x: x * spacing + offsetX, y: y * spacing + offsetY });
-                        points.push({ x: x * spacing + offsetX + 3, y: y * spacing + offsetY + 3 });
+                        // Tạo 4 hạt tại mỗi tọa độ để chữ siêu dày (Bold)
+                        for(let k = 0; k < 4; k++) {
+                            points.push({
+                                x: x * spacing + offsetX + (Math.random() * 6 - 3),
+                                y: y * spacing + offsetY + (Math.random() * 6 - 3)
+                            });
+                        }
                     }
                 }
             }
+            return points;
         }
 
         startBtn.addEventListener('click', () => {
             startBtn.style.display = 'none';
-            createLetterPoints();
-            
-            // Giai đoạn 1: Cơn gió thổi tung
+            music.play().catch(() => {});
+
+            const targetPoints = getTargetPoints();
+
+            // Bước 1: Hiệu ứng gió thổi lung tung ban đầu
             hearts.forEach((h, i) => {
-                setTimeout(() => {
-                    const windX = Math.random() * window.innerWidth;
-                    const windY = Math.random() * window.innerHeight;
-                    h.el.style.opacity = '0.8';
-                    h.el.style.transform = `translate(${windX}px, ${windY}px) scale(${Math.random() * 1 + 0.5}) rotate(${Math.random() * 360}deg)`;
-                }, i * 2);
+                const randomX = Math.random() * window.innerWidth;
+                const randomY = Math.random() * window.innerHeight;
+                h.el.style.opacity = '0.6';
+                h.el.style.transform = `translate(${randomX}px, ${randomY}px) scale(1) rotate(${Math.random() * 360}deg)`;
             });
 
-            // Giai đoạn 2: Gom thành chữ (Sau 1.5 giây)
+            // Bước 2: Gom lại thành chữ sau 1 giây
             setTimeout(() => {
                 hearts.forEach((h, i) => {
-                    if (i < points.length) {
-                        const target = points[i];
-                        h.el.style.transform = `translate(${target.x}px, ${target.y}px) scale(1.2) rotate(0deg)`;
-                        h.el.classList.add('glow');
-                        h.el.style.opacity = '1';
+                    if (i < targetPoints.length) {
+                        const target = targetPoints[i];
+                        h.el.className = 'heart glow';
+                        h.el.style.transform = `translate(${target.x}px, ${target.y}px) scale(1.1) rotate(0deg)`;
                     } else {
-                        // Những hạt thừa thì bay tản ra xung quanh tạo hiệu ứng lấp lánh
-                        const outX = Math.random() * window.innerWidth;
-                        const outY = Math.random() * window.innerHeight;
+                        // Hạt thừa bay tản mác
+                        const angle = Math.random() * Math.PI * 2;
+                        const dist = Math.random() * 200 + 100;
+                        const tx = window.innerWidth/2 + Math.cos(angle) * dist;
+                        const ty = window.innerHeight/2 + Math.sin(angle) * dist;
                         h.el.style.opacity = '0.2';
-                        h.el.style.transform = `translate(${outX}px, ${outY}px) scale(0.5)`;
+                        h.el.style.transform = `translate(${tx}px, ${ty}px) scale(0.5)`;
                     }
                 });
-            }, 2000);
+            }, 1000);
         });
 
-        init();
+        window.addEventListener('load', init);
     </script>
 </body>
 </html>
